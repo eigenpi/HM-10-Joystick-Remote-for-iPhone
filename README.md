@@ -1,6 +1,6 @@
 # HM-10 Joystick Remote for iPhone
 
-This is a single-page touch joystick remote for a simple robot that uses **HM-10 BLE + Arduino Pro Mini**. 
+This is a single-page touch joystick remote to control via BlueTooth a simple robot, which uses **HM-10 BLE Module + Arduino Pro Mini**. 
 This remote is intended to be run on an **iPhone** device.
 I use it as a remote controller in a lab for one of my courses: https://dejazzer.com/eece3015/index.html 
 
