@@ -2,7 +2,7 @@
 
 This is a single-page touch joystick remote for a simple robot that uses **HM-10 BLE + Arduino Pro Mini**. 
 This remote is intended to be run on an **iPhone** device.
-I use it as a remote controller in a lab for one of my courses (https://dejazzer.com/eece3015/index.html).
+I use it as a remote controller in a lab for one of my courses: https://dejazzer.com/eece3015/index.html 
 
 ![photo1](images/joystick.jpg)
 
@@ -21,7 +21,8 @@ Diagonal movement combines bits: forward-left = `0x05`, forward-right = `0x06`, 
 
 1. Install **Bluefy – Web BLE Browser** from the iOS App Store.
 2. Enable Bluetooth on the iPhone. 
-3. Open **Bluefy**, enter this HTTPS GitHub Pages URL to load the joystick webpage.
+3. Open **Bluefy**, enter this HTTPS GitHub Pages URL to load the joystick webpage:
+   https://eigenpi.github.io/HM-10-Joystick-Remote-for-iPhone/index.html 
 
 ## Credits
 
