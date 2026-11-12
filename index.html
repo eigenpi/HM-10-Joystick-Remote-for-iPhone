@@ -23,6 +23,9 @@
 <div class="joystick-area"><div id="joystick" class="joystick" role="application" aria-label="Touch joystick: move and release to stop"><div class="ring"></div><span class="axis-label up">FORWARD</span><span class="axis-label down">BACK</span><span class="axis-label left">LEFT</span><span class="axis-label right">RIGHT</span><div id="knob" class="knob"></div></div></div>
 <div class="readouts"><div class="readout"><span class="label">Pan (positive = left)</span><strong id="pan">0.00</strong></div><div class="readout"><span class="label">Tilt (negative = forward)</span><strong id="tilt">0.00</strong></div><div class="readout full"><span class="label">Command byte</span><strong><code id="binary">0b00000000</code> &nbsp; <code id="hex">0x00</code></strong><span id="direction" class="small">STOP</span></div></div>
 <p class="note">Release your finger to center the joystick and request STOP (0x00). Commands are sent every 100 ms while connected.</p>
+<div class="controls">
+  <button id="headlights"> Headlights OFF</button>
+  <button id="horn"> Sound Horn</button>
 </section>
 <section class="panel"><div class="settings"><label for="deadzone">Center dead zone</label><strong id="deadzoneValue">20%</strong></div><input id="deadzone" type="range" min="5" max="40" value="20" step="5"><p class="note">Small movements inside the dead zone are treated as centered. Diagonal commands combine two bits.</p><div class="controls"><button id="test" class="secondary">Test encoding (no BLE)</button><button id="stop" class="secondary">STOP now</button></div><pre id="log" aria-live="polite"></pre></section>
 <p class="note">Safety: The receiver must independently stop motors if no valid command arrives within approximately 300–500 ms. Browser disconnects and phone sleep can prevent STOP from reaching the receiver.</p>
@@ -39,6 +42,8 @@ let device = null, characteristic = null, timer = null;
 let pan = 0, tilt = 0, commandByte = 0, activePointer = null;
 let writeBusy = false;
 let deadZone = Number($('deadzone').value) / 100;
+let headlightsOn = false;
+let hornOn = false;
 function log(message) { const time = new Date().toLocaleTimeString(); $('log').textContent = `[${time}] ${message}\n` + $('log').textContent.slice(0, 1800); }
 function setStatus(message, online) { $('status').textContent = message; $('dot').classList.toggle('online', online); $('connect').disabled = online; $('disconnect').disabled = !online; }
 function encode(p, t) {
@@ -47,6 +52,14 @@ function encode(p, t) {
   if (t >  deadZone) b |= 0b00001000; // backward
   if (p >  deadZone) b |= 0b00000001; // left
   if (p < -deadZone) b |= 0b00000010; // right
+
+  if(headlightsOn){
+    b |= 0x10; //setting bit 4 for the headlights
+  }
+
+  if(hornOn){
+    b |= 0x20; //setting bit 5 for the horn
+  }
   return b;
 }
 function updateDisplay() {
@@ -83,6 +96,23 @@ joystick.addEventListener('pointercancel', e => { if (activePointer === e.pointe
 joystick.addEventListener('lostpointercapture', () => { if (activePointer !== null) center(); });
 $('deadzone').addEventListener('input', e => { deadZone = Number(e.target.value) / 100; $('deadzoneValue').textContent = `${Math.round(deadZone * 100)}%`; updateDisplay(); });
 $('stop').addEventListener('click', center);
+$('headlights').addEventListener('click', () => {
+  headlightsOn = !headlightsOn; //toggles headlights
+$('headlights').textContent =
+    headlightsOn ? 'Headlights ON' : 'Headlights OFF';
+  updateDisplay();
+});
+$('horn').addEventListener('pointerdown', () => {
+  hornOn = true; //press and hold the horn button
+  updateDisplay();
+});
+function releaseHorn() {
+  hornOn = false;
+  updateDisplay();
+}
+$('horn').addEventListener('pointerup', releaseHorn);
+$('horn').addEventListener('pointercancel', releaseHorn);
+$('horn').addEventListener('lostpointercapture', releaseHorn);
 $('test').addEventListener('click', () => { log(`Encoding check: F=0x${encode(0,-1).toString(16)}, B=0x${encode(0,1).toString(16)}, L=0x${encode(1,0).toString(16)}, R=0x${encode(-1,0).toString(16)}, F+L=0x${encode(1,-1).toString(16)}`); });
 function stopTimer() { if (timer !== null) { clearInterval(timer); timer = null; } }
 function disconnected() { stopTimer(); characteristic = null; writeBusy = false; center(); setStatus('Disconnected', false); log('BLE disconnected. Receiver must fail safe to STOP.'); }
